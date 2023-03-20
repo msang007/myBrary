@@ -4,9 +4,12 @@ import path from "path";
 import { fileURLToPath } from 'url';
 import dotenv from "dotenv";
 import router from "./routes/index.js";
+import authorRouter from "./routes/authors.js";
 import mysql from "mysql";
+import mongoose from 'mongoose';
+import bodyParser from "body-parser";
 
-;
+
 const app = express();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -18,6 +21,14 @@ app.set('views', __dirname + '/views');
 app.set('layout', 'layouts/layout');
 app.use(expressLayouts);
 app.use(express.static(location));
+app.use(bodyParser.urlencoded({limit: '10mb', extended: false}));
+
+//connection to mongoose process
+mongoose.connect(ENV.DATABASE_URL,{useNewUrlParser: true })
+const db= mongoose.connection
+db.on('error', error => console.error(error))
+db.once('open',()=> console.log('connected to mongoose'))
+/*
 var con = mysql.createConnection({
     host: ENV.DB_HOST,
     user: ENV.DB_USER,
@@ -33,9 +44,10 @@ con.connect((err, connection) => {
     }
 });
 
-
+*/
 
 app.use('/',router);
+app.use('/authors',authorRouter);
 
 const port = ENV.Port || 8080;
 app.listen(port,()=> console.log(`listening on port ${port}`));
